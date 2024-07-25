@@ -43,19 +43,20 @@ def callback():
     request_session = requests.Session() 
     cached_session = cachecontrol.CacheControl(request_session)
     token_request = google.auth.transport.requests.Request(session=cached_session)
-
+    global id_info
     id_info = id_token.verify_oauth2_token(
         id_token=credentials.id_token,
         request=token_request,
         audience=GOOGLE_CLIENT_ID
     )
-    name = id_info["name"]
-    return f"welcome {name} to the stock analyzer app"
+    session['google_id'] = id_info["email"]
+    return redirect("/protected")
 
 @app.route("/protected")
 @google_signin_required
 def protected():
-    return "Log out \n <a href='/logout'><button>Logout</button></a>"
+    name = id_info["name"]
+    return f"Welcome {name} to stock analyzer, Log out \n <a href='/logout'><button>Logout</button></a>"
 
 @app.route("/logout")
 def logout():
